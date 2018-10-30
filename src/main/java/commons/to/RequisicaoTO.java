@@ -1,3 +1,7 @@
+package commons.to;
+import commons.enumation.OperationType;
+import commons.model.Pessoa;
+
 import java.io.Serializable;
 
 /**

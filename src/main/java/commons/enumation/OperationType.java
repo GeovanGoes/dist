@@ -1,3 +1,4 @@
+package commons.enumation;
 /**
  * 
  */
