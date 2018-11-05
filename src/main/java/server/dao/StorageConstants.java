@@ -4,7 +4,7 @@
 package server.dao;
 
 /**
- * @author geovan.goes
+ * 
  *
  */
 public interface StorageConstants

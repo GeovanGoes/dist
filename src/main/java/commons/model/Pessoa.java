@@ -1,6 +1,7 @@
 package commons.model;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Objects;
 
 /**
  * 
@@ -10,9 +11,13 @@ import java.util.Date;
  * @author geovan.goes
  *
  */
-public class Pessoa implements Serializable
+public class Pessoa implements Serializable, Comparable<Pessoa>
 {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -3662947187099483523L;
 	private long id;
 	private String nome;
 	private String email;
@@ -130,6 +135,31 @@ public class Pessoa implements Serializable
 	{
 		this.update = update;
 	}
+
+
+	@Override
+	public int compareTo(Pessoa o)
+	{
+		return Long.compare(this.id, o.getId());
+	}
+	
+	@Override
+	public String toString()
+	{
+		return String.valueOf(getId());
+	}
 	
 	
+	@Override
+	public boolean equals(Object obj)
+	{
+		return ((Pessoa) obj).getId() == getId();
+	}
+	
+	@Override
+	public int hashCode()
+	{
+		// TODO Auto-generated method stub
+		return Objects.hash(getId());
+	}
 }

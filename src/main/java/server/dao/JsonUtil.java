@@ -8,7 +8,7 @@ import commons.model.ListaPessoas;
 
 
 /**
- * @author geovan.goes
+ * 
  *
  */
 public class JsonUtil

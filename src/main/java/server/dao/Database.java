@@ -8,7 +8,7 @@ import commons.model.Pessoa;
 import java.util.List;
 
 /**
- * @author geovan.goes
+ * 
  *
  */
 public interface Database
@@ -21,4 +21,6 @@ public interface Database
 	boolean update (Pessoa pessoa);
 	
 	boolean delete (long id);
+	
+	Pessoa readById(long id);
 }

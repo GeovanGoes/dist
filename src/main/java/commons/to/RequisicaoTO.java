@@ -9,11 +9,15 @@ import java.io.Serializable;
  */
 
 /**
- * @author geovan.goes
+ * 
  *
  */
 public class RequisicaoTO implements Serializable
 {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -5617632220617288358L;
 	private OperationType operation;
 	private Pessoa pessoa;
 

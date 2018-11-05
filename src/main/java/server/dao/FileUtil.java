@@ -15,7 +15,7 @@ import java.io.OutputStreamWriter;
 import java.nio.channels.FileLock;
 
 /**
- * @author geovan.goes
+ * 
  *
  */
 public class FileUtil

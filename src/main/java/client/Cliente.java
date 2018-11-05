@@ -1,23 +1,30 @@
 package client;
 
+import java.io.IOException;
+import java.net.Socket;
+import java.util.Date;
+import java.util.List;
+import java.util.Scanner;
+
 import commons.enumation.OperationType;
 import commons.infra.Conexao;
 import commons.model.Pessoa;
 import commons.to.RequisicaoTO;
 import commons.to.ResponseTO;
 
-import java.io.IOException;
-import java.net.Socket;
-import java.util.Date;
-import java.util.Scanner;
 
 public class Cliente
 {
 
-	static Conexao c;
+	static Conexao conexao;
 	static Socket socket;
 
 	public Cliente()
+	{
+		criarConexao();
+	}
+
+	private static void criarConexao()
 	{
 		try
 		{
@@ -31,55 +38,43 @@ public class Cliente
 
 	public static void main(String[] args)
 	{
-
-		new Cliente();
-		float op1, op2;
-		char oper;
-		Scanner in = new Scanner(System.in);
+		Scanner scanner = new Scanner(System.in);
 
 		System.out.println("*********************************");
 		System.out.println("***    CADASTRO DE PESSOAS    ***");
 		System.out.println("*********************************");
 
 		int opcaoSelecionada = 0;
-
+		
 		do
 		{
 			showOptions();
 
-			opcaoSelecionada = in.nextInt();
+			opcaoSelecionada = scanner.nextInt();
 
+			criarConexao();
+			
 			switch (opcaoSelecionada)
 			{
 				case 1:
-					showDigiteNome(null);
-					String nome = in.nextLine();
-					showDigiteEmail(null);
-					String email = in.nextLine();
-					Pessoa pessoa = new Pessoa(nome, email, new Date(), new Date());
-					RequisicaoTO requisicaoTO = new RequisicaoTO(OperationType.CREATE, pessoa);
-					c.send(socket, requisicaoTO);
-					ResponseTO msgRep = (ResponseTO) c.receive(socket);
-					System.out.println(msgRep.getMessage());
+					processoCreate(scanner);
 					break;
-
+				case 2:
+					processoRead();
+					break;
+				case 3:
+					processoUpdate();
+					break;
+				case 4: 
+					processoDelete();
+					break;
 				default:
 					break;
+					
 			}
-
 		}
 		while (opcaoSelecionada != 5);
-
-		/*
-		 * 
-		 * System.out.println("Digite o primeiro numero"); op1 = in.nextFloat(); System.out.println("Digite o segundo numero"); op2 = in.nextFloat();
-		 * System.out.println("Escolha uma operação"); System.out.println("(+)SOMA (-)SUBTRACAO (x)MULTIPLICACAO (/)DIVISAO"); oper = in.next().charAt(0);
-		 * 
-		 * Requisicao msgReq = new Requisicao(op1, op2, oper); c.send(socket, msgReq); Resposta msgRep = (Resposta) c.receive(socket);
-		 * 
-		 * if (msgRep.getStatus() == 0) { System.out.println("Resultado = " + msgRep.getResult()); } else if (msgRep.getStatus() == 1) {
-		 * System.out.println("Operacao nao Implementada"); } else { System.out.println("Divisao por Zero"); }
-		 */
+		
 		try
 		{
 			socket.close();
@@ -90,6 +85,140 @@ public class Cliente
 		}
 	}
 
+	/***
+	 * 
+	 */
+	@SuppressWarnings("static-access")
+	private static void processoDelete()
+	{
+		processoRead();
+		System.out.println("Digite o id do usuario que deseja deletar.");
+		long id = lerLong();
+		
+		ResponseTO responseReadById = readByIdProcess(id);
+		
+		if (responseReadById.isSuccess())
+		{
+			criarConexao();		
+			conexao.send(socket, new RequisicaoTO(OperationType.DELETE, new Pessoa(id, null, null, null, null)));
+			ResponseTO response = (ResponseTO) conexao.receive(socket);
+			System.out.println(response.getMessage());
+		}
+		else
+			System.out.println(responseReadById.getMessage());
+	}
+
+	/***
+	 * 
+	 */
+	@SuppressWarnings("static-access")
+	private static void processoUpdate()
+	{
+		processoRead();
+		System.out.println("Digite o id do usuario que deseja alterar.");
+		long id = lerLong();
+		ResponseTO response = readByIdProcess(id);
+		
+		if (response.isSuccess())
+		{
+			Pessoa pessoa = response.getPessoa();
+			exibirPessoa(pessoa);
+			showDigiteNome(pessoa.getNome());
+			pessoa.setNome(lerString()); 
+			showDigiteEmail(pessoa.getEmail());
+			pessoa.setEmail(lerString());
+			criarConexao();
+			conexao.send(socket, new RequisicaoTO(OperationType.UPDATE, pessoa));
+			ResponseTO responseUpdate = (ResponseTO) conexao.receive(socket);
+			System.out.println(responseUpdate.getMessage());
+		}
+		else
+			System.out.println(response.getMessage());
+	}
+
+	@SuppressWarnings("static-access")
+	private static ResponseTO readByIdProcess(long id)
+	{
+		criarConexao();
+		conexao.send(socket, new RequisicaoTO(OperationType.READ_BY_ID, new Pessoa(id, null, null, null, null)));
+		ResponseTO response = (ResponseTO) conexao.receive(socket);
+		return response;
+	}
+
+	/***
+	 * 
+	 * @return
+	 */
+	@SuppressWarnings("resource")
+	public static String lerString()
+	{
+		return new Scanner(System.in).nextLine();
+	}
+	
+	/***
+	 * 
+	 * @return
+	 */
+	@SuppressWarnings("resource")
+	public static long lerLong()
+	{
+		return new Scanner(System.in).nextLong();
+	}
+	
+	/***
+	 * 
+	 * @return
+	 */
+	@SuppressWarnings("static-access")
+	private static List<Pessoa> processoRead()
+	{
+		conexao.send(socket, new RequisicaoTO(OperationType.READ, null));
+		ResponseTO resonse = (ResponseTO) conexao.receive(socket);
+		exibirPessoas(resonse);
+		return resonse.getPessoas();
+	}
+
+	@SuppressWarnings("static-access")
+	private static void processoCreate(Scanner in)
+	{
+		showDigiteNome(null);
+		String nome = lerString();
+		showDigiteEmail(null);
+		String email = lerString();
+		Pessoa pessoa = new Pessoa(nome, email, new Date(), new Date());
+		RequisicaoTO requisicaoTO = new RequisicaoTO(OperationType.CREATE, pessoa);
+		conexao.send(socket, requisicaoTO);
+		ResponseTO msgRep = (ResponseTO) conexao.receive(socket);
+		System.out.println(msgRep.getMessage());
+	}
+
+	/***
+	 * 
+	 * @param resonse
+	 */
+	private static void exibirPessoas(ResponseTO resonse)
+	{
+		for (Pessoa pessoa : resonse.getPessoas())
+		{
+			exibirPessoa(pessoa);
+			System.out.println("----------------------------------------------------------------------------------");
+		}
+			
+	}
+	
+	/***
+	 * 
+	 * @param pessoa
+	 */
+	private static void exibirPessoa(Pessoa pessoa)
+	{
+		System.out.println("Id: " + pessoa.getId());
+		System.out.println("Nome: " + pessoa.getNome());
+		System.out.println("Email: " + pessoa.getEmail());
+		System.out.println("Data de cricao: " + pessoa.getCricao());
+		System.out.println("Data ultima atualizacao: " + pessoa.getUpdate());
+	}
+	
 	/**
 	 * @param object
 	 */
@@ -122,11 +251,10 @@ public class Cliente
 	 */
 	private static void showOptions()
 	{
-		System.out.println("Operações");
+		System.out.println("Selecione uma opcao");
 		System.out.println("(1) - Cadastrar");
 		System.out.println("(2) - Listar");
 		System.out.println("(3) - Atualizar");
 		System.out.println("(4) - Deletar");
-		System.out.println("(5) - Finalizar");
 	}
 }

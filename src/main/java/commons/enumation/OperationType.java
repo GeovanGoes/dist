@@ -4,13 +4,14 @@ package commons.enumation;
  */
 
 /**
- * @author geovan.goes
+ *
  *
  */
 public enum OperationType
 {
 	CREATE,
 	READ,
+	READ_BY_ID,
 	UPDATE,
 	DELETE;
 }

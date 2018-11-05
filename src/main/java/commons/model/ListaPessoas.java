@@ -9,6 +9,10 @@ import java.util.List;
 
 public class ListaPessoas implements Serializable
 {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1908824837220992390L;
 	private List<Pessoa> pessoas;
 
 	public ListaPessoas(List<Pessoa> pessoas)
